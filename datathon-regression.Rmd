@@ -1,0 +1,105 @@
+
+
+```{r}
+combined <- read.csv('combined_data_new.csv', header = TRUE)
+combined
+```
+
+```{r}
+par(mfrow=c(3,3))
+hist(combined$hosp_avg, breaks = 10, main = "Hospitalization Avg Distribution", xlab = "Hospitalization Average")
+hist(combined$death_avg, breaks = 10, main = "Death Avg Distribution", xlab = "Death Average")
+hist(combined$percentpos_avg, breaks = 10, main = "Percent Positive Avg Distribution", xlab = "Percent Positive Average")
+hist(combined$pc_cover, breaks = 10, main = "PC Cover Distribution", xlab = "PC Cover")
+hist(combined$tree_cover, breaks = 10, main = "Tree Cover Distribution", xlab = "Tree Cover")
+hist(combined$diameter_breast_height_CM, breaks = 10, main = "Diameter Distribution", xlab = "Diameter of Tree")
+hist(combined$native, breaks = 10, main = "Native Distribution", xlab = "Native")
+hist(combined$condition_enc, breaks = 10, main = "Condition Encoded Distribution", xlab = "Condition Encoded")
+
+```
+
+```{r}
+par(mfrow=c(2,3))
+plot(log(combined$pc_cover + 1), combined$hosp_avg, xlab = 'Log of Absolute Number of Trees', ylab = 'Hospitalization Avg', main = 'Log of Number of Trees vs Hospitalization Avg')
+plot(log(combined$tree_cover), combined$hosp_avg, xlab = 'Log of Absolute Number of Trees', ylab = 'Hospitalization Avg', main = 'Log of Number of Trees vs Hospitalization Avg')
+plot(combined$diameter_breast_height_CM, combined$hosp_avg, xlab = 'Diameter of Trees', ylab = 'Hospitalization Avg', main = "Diameter of Trees vs Hospitalization Avg")
+plot(combined$native, combined$hosp_avg, xlab = 'Native', ylab = 'Hospitalization Avg', main = 'Native or Not Native Tree vs Hospitalization Avg')
+plot(log(combined$condition_enc), combined$hosp_avg, xlab = 'Log of Encoding of Condition of Tree', ylab = 'Hospitalization Avg', main = 'Log of Encoding of Condition of Tree vs Hospitalization Avg')
+```
+
+```{r}
+par(mfrow=c(2, 3))
+plot(log(combined$pc_cover + 1), combined$death_avg, xlab = 'Log of PC Cover', ylab = 'Death Avg', main = 'Log of PC Cover  vs Death Avg')
+plot(log(combined$tree_cover), combined$death_avg, xlab = 'Log of Tree Cover', ylab = 'Death Avg', main = 'Log of Tree Cover vs Death Avg')
+plot(combined$diameter_breast_height_CM, combined$death_avg, xlab = 'Diameter of Trees', ylab = 'Death Avg', main = "Diameter of Trees vs Death Avg")
+plot(combined$native, combined$death_avg, xlab = 'Native', ylab = 'Death Avg', main = 'Native or Not Native Tree vs Death Avg')
+plot(log(combined$condition_enc), combined$death_avg, xlab = 'Log of Condition Encoding', ylab = 'Death Avg', main = 'Log of Condition Encoding of Tree vs Death Avg')
+```
+
+```{r}
+par(mfrow=c(2, 3))
+plot(log(combined$pc_cover + 1), combined$percentpos_avg, xlab = 'Log of PC Cover', ylab = 'Percent Positive Avg', main = 'Log of PC Cover vs Percent Positive Avg')
+plot(log(combined$tree_cover), combined$percentpos_avg, xlab = 'Log of Tree Cover', ylab = 'Percent Positive Avg', main = 'Log of Tree Cover vs Percent Positive Avg')
+plot(combined$diameter_breast_height_CM, combined$percentpos_avg, xlab = 'Diameter of Trees', ylab = 'Percent Positive Avg', main = "Diameter of Trees vs Percent Positive Avg")
+plot(combined$native, combined$percentpos_avg, xlab = 'Native', ylab = 'Percent Positive Avg', main = 'Native or Not Native Tree vs Percent Positive Avg')
+plot(log(combined$condition_enc), combined$percentpos_avg, xlab = 'Log of Condition Encoding', ylab = 'Percent Positive Avg', main = 'Log of Condition Encoding of Tree vs Percent Positive Avg')
+min(log(combined$condition_enc))
+which.min(log(combined$condition_enc))
+```
+
+
+```{r}
+hosp_model <- lm(hosp_avg ~ native, data = combined, x = T)
+summary(hosp_model)
+
+par(mfrow=c(1, 2))
+plot(fitted(hosp_model), hosp_model$residuals, xlab = 'Fitted Values', ylab = 'Residuals', main = 'Fitted vs Residuals')
+abline(0,0)
+
+qqnorm(hosp_model$residuals)
+qqline(hosp_model$residuals)
+
+#library(bestglm)
+#newframe = data.frame(cbind(hosp_model$x[,-1], combined$hosp_avg))
+#bestglm(newframe, IC = 'LOOCV')
+
+mean((fitted(hosp_model) - combined$hosp_avg)^2)
+```
+
+
+```{r}
+death_model <- lm(death_avg ~ log(tree_cover) + diameter_breast_height_CM + native + log(condition_enc), data = combined, x = T)
+summary(death_model)
+
+par(mfrow = c(1,2))
+plot(fitted(death_model), death_model$residuals, xlab = 'Fitted Values', ylab = "Residuals", main = 'Fitted vs Residuals')
+abline(0,0)
+qqnorm(death_model$residuals)
+qqline(death_model$residuals)
+
+#newframe = data.frame(cbind(death_model$x[,-1], combined$death_avg))
+#bestglm(newframe, IC = 'LOOCV')
+
+mean((fitted(death_model) - combined$death_avg)^2)
+```
+
+```{r}
+percentpos_model <- lm(percentpos_avg ~ log(pc_cover + 1) + log(tree_cover) + diameter_breast_height_CM + log(condition_enc), data = combined, x = T)
+summary(percentpos_model)
+
+par(mfrow = c(1,2))
+plot(fitted(percentpos_model), percentpos_model$residuals, xlab = 'Fitted Values', ylab = 'Residuals', main = 'Fitted vs Residuals')
+abline(0,0)
+
+qqnorm(percentpos_model$residuals)
+qqline(percentpos_model$residuals)
+
+#newframe = data.frame(cbind(percentpos_model$x[,-1], combined$percentpos_avg))
+#bestglm(newframe, IC = 'LOOCV')
+
+mean((fitted(percentpos_model) - combined$percentpos_avg)^2)
+```
+
+
+
+
